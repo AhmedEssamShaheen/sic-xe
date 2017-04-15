@@ -2,9 +2,6 @@ package sample.mainbody;
 
 import java.util.HashMap;
 
-/**
- * Created by hp-laptop on 4/13/2017.
- */
 public class SymbolicTable
 {
 private HashMap<String ,SymbolData> rowInformmation;
@@ -21,19 +18,9 @@ private HashMap<String ,SymbolData> rowInformmation;
         rowInformmation.put(Label,new SymbolData(address));
     }
 
-    private String gethexaOfString(String data){
-
-        int sum=0;
-        for(int i=0 ;i<data.length();i++){
-
-        }
-
-        return sum!=0?new String() :null;
-    }
-
 
     private SymbolicTable() {
-        rowInformmation=new HashMap<String ,SymbolData>();
+        rowInformmation=new HashMap<>();
     }
 
     public static SymbolicTable getTable() {
