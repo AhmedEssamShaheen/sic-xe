@@ -1,0 +1,24 @@
+package sample.mainbody;
+
+import java.util.Map;
+
+/**
+ * Created by hp-laptop on 4/15/2017.
+ */
+public class PathTwo {
+    private PathOne one ;
+    public PathTwo() {
+        this.one = new PathOne("E:\\Ahmed\\GITHUB_RES\\Git2\\sic-xe\\src\\sample\\files/code.txt");
+        checkUndefinedAddress(one.getSymboltable());
+    }
+
+    private void checkUndefinedAddress(SymbolicTable symboltable) {
+        for(Map.Entry entery:symboltable.getRowInformmation().entrySet()){
+
+            if(symboltable.getAddress(entery.getKey().toString())==-1) {
+                System.err.println("There is undifined label  "+entery.getKey());
+                break;
+            }
+        }
+    }
+}
