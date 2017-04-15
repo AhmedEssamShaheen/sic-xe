@@ -2,6 +2,7 @@ package sample;
 
 import sample.mainbody.InstructionFormate;
 import sample.mainbody.PathOne;
+import sample.mainbody.PathTwo;
 import sample.mainbody.SymbolicTable;
 
 import java.util.HashMap;
@@ -9,7 +10,7 @@ import java.util.HashMap;
 public class Main  {
     public static void main(String[] args) {
 
-       PathOne one =new PathOne("E:\\Ahmed\\GITHUB_RES\\Git2\\sic-xe\\src\\sample\\files/code.txt");
+        PathTwo tow =new PathTwo();
 
 //        InstructionFormate formates = InstructionFormate.getInstructionTable();
        // System.out.println(InstructionFormate.Register.A.getLocation());//this is the way to get the value of register
@@ -18,6 +19,6 @@ public class Main  {
 //        System.out.println(programCounter);
       /*  String code = Integer.toHexString(programCounter);
         System.out.println(code); */
-
+      ;
     }
 }

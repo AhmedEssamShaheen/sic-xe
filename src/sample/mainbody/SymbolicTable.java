@@ -21,6 +21,17 @@ private HashMap<String ,SymbolData> rowInformmation;
         rowInformmation.put(Label,new SymbolData(address));
     }
 
+    private String gethexaOfString(String data){
+
+        int sum=0;
+        for(int i=0 ;i<data.length();i++){
+
+        }
+
+        return sum!=0?new String() :null;
+    }
+
+
     private SymbolicTable() {
         rowInformmation=new HashMap<String ,SymbolData>();
     }
