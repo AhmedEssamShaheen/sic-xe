@@ -33,6 +33,7 @@ private HashMap<String ,SymbolData> rowInformmation;
     private class SymbolData{
 private  int   value =0;
 private  int   address=0;
+private  String base =null;
 
         public SymbolData(int value, int address) {
             this.value = value;
@@ -62,5 +63,13 @@ private  int   address=0;
     public  void setValue(String label,int value){
         rowInformmation.get(label).value=value;
     }
+    public String getBase() {
+        return rowInformmation.get("Bse").base;
+    }
+    public  void setBase(String state){
+        rowInformmation.get("Bse").base=state;
+    }
+
+
 }
 

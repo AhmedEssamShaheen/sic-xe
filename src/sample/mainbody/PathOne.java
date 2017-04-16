@@ -1,17 +1,7 @@
 package sample.mainbody;
-import org.w3c.dom.css.Counter;
-
-import javax.management.Query;
 import java.io.*;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Formatter;
-import java.util.List;
 
-/**
- * Created by hp-laptop on 4/13/2017.
- */
 public class PathOne implements Controlling{
     private int programCounter=0;
     private Integer opperandLocation=null;
@@ -26,6 +16,8 @@ public class PathOne implements Controlling{
     private int dispalcement=-1;
     private boolean breakflag=false;
     private Formatter updatedFile;
+    private boolean basedefined=false;
+
     public String[] concat(String[] a, String[] b) {
         int aLen = a.length-1;
         int bLen = b.length;
@@ -39,9 +31,6 @@ public class PathOne implements Controlling{
         return symboltable;
     }
 
-    public int gettheCodeOffset(){
-
-        return dispalcement;}
     public PathOne(String FileName) {
         file=FileName;
         formates=InstructionFormate.getInstructionTable();
@@ -67,12 +56,18 @@ public class PathOne implements Controlling{
         }
 
     }
-
+   private String checkspace(String line){
+       while(line.charAt(0)==' '){
+           line=line.substring(1);
+       }
+return line;
+   }
     @Override
-    public void onRead() {
+    public  void onRead() {
 
         try {
             while((line =reader.readLine())!=null){
+                checkspace(line);
                 if(breakflag)break;
                 linecounter++;
                 openFile();
@@ -118,6 +113,7 @@ public class PathOne implements Controlling{
     }
 
     private void reservedInstruction(String[] data) {
+
      switch(data[opperandLocation]){
          case "BYTE":
              if(formates.getNumberOfRegister(data[opperandLocation])!=data.length-opperandLocation-1&&data.length!=opperandLocation+2){
@@ -176,7 +172,17 @@ public class PathOne implements Controlling{
                  System.err.println("you should add immediate value");
              }
              break;
+         case  "BASE":
+if(!basedefined) {
+    symboltable.setRow("Bse", programCounter);
+    symboltable.setBase(data[opperandLocation + 1]);
+}else{
+    System.err.println(" The base is already defined");
+    System.err.println("The error at line " +linecounter);
+}
 
+
+             break;
 
 
      }
@@ -199,7 +205,6 @@ public class PathOne implements Controlling{
     }
 
     private void checkOperandNumber(String[] data) {
-
         switch(formates.getFormate(data[opperandLocation])){
     case 0:
        if(formates.getNumberOfRegister(data[opperandLocation])!=data.length-opperandLocation-1&&data.length!=opperandLocation+2){
@@ -270,8 +275,15 @@ if(data.length!=opperandLocation+1){
         if (formates.getInstructionMap().get(data[0]) == null) {
             if(symboltable.getRowInformmation().get(data[0])==null)
             symboltable.setRow(data[0], programCounter);
-            else
+            else{
+                   if(symboltable.getAddress(data[0])==-1)
                 symboltable.setAddress(data[0],programCounter);
+                   else {
+                       System.err.println("The label defined twise ");
+                       System.exit(1);
+                   }
+            }
+
             if (formates.getInstructionMap().get(data[1]) == null) {
                 System.err.println("syntax error");
                 System.err.println("The error at line "+linecounter);
@@ -346,6 +358,5 @@ if(symboltable.getRowInformmation().get(data[1])==null) {
     private void closefile(){
         updatedFile.close();
     }
-
 }
 
