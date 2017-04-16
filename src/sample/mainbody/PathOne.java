@@ -52,7 +52,7 @@ public class PathOne implements Controlling{
             onRead();
         }catch(Exception ex){
             System.err.println("There is Error in the reader path one ");
-            System.exit(1);
+           // System.exit(1);
         }
 
     }
@@ -74,21 +74,17 @@ return line;
                 String[] data1 = line.split("[ ]+");
                 String []data2=data1[data1.length-1].split(",");
                 String [] data =concat(data1, data2);
-//                List<String> arrlist=Arrays.asList(data);
-//                arrlist.remove(" ");
-//                data=(String[]) arrlist.toArray();
                 if(intiallocation) {
                     addUpdate(programCounter, line);
                 }handdleLine(data,line);
-//                System.out.println("***********************");
-//                System.out.println(symboltable.getRowInformmation());
-//                System.out.println("***********************");
             }
+            if(!breakflag)
+                System.err.println(" END STATEMENT IS MISSED ");
             closefile();
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println("The error at line "+linecounter);
-            System.exit(1);
+//            System.exit(1);
 
         }
 
@@ -107,7 +103,7 @@ return line;
         }else {
             System.err.println("Syntax error");
             System.err.println("The error at line "+linecounter);
-            System.exit(1);
+//            System.exit(1);
 
         }
     }
@@ -119,7 +115,7 @@ return line;
              if(formates.getNumberOfRegister(data[opperandLocation])!=data.length-opperandLocation-1&&data.length!=opperandLocation+2){
                  System.err.println("Syntax error in number of opperand");
                  System.err.println("The error at line "+linecounter);
-                 System.exit(1);
+//                 System.exit(1);
              }
              String val[]=data[opperandLocation+1].split("'");
              switch(val[0]){
@@ -135,7 +131,7 @@ return line;
              if(formates.getNumberOfRegister(data[opperandLocation])!=data.length-opperandLocation-1&&data.length!=opperandLocation+2){
                  System.err.println("Syntax error in number of opperand");
                  System.err.println("The error at line "+linecounter);
-                 System.exit(1);
+//                 System.exit(1);
              }
              try{int value=Integer.parseInt(data[opperandLocation+1]);
              programCounter+=3;
@@ -150,7 +146,7 @@ return line;
              if(formates.getNumberOfRegister(data[opperandLocation])!=data.length-opperandLocation-1&&data.length!=opperandLocation+2){
                  System.err.println("Syntax error in number of opperand");
                  System.err.println("The error at line "+linecounter);
-                 System.exit(1);
+//                 System.exit(1);
              }
              try{int value=Integer.parseInt(data[opperandLocation+1]);
                  programCounter+=value*3;
@@ -164,7 +160,7 @@ return line;
              if(formates.getNumberOfRegister(data[opperandLocation])!=data.length-opperandLocation-1&&data.length!=opperandLocation+2){
                  System.err.println("Syntax error in number of opperand");
                  System.err.println("The error at line "+linecounter);
-                 System.exit(1);
+//                 System.exit(1);
              }
              try{int value=Integer.parseInt(data[opperandLocation+1]);
                  programCounter+=value;
@@ -210,14 +206,14 @@ if(!basedefined) {
        if(formates.getNumberOfRegister(data[opperandLocation])!=data.length-opperandLocation-1&&data.length!=opperandLocation+2){
            System.err.println("Syntax error in number of opperand");
            System.err.println("The error at line "+linecounter);
-           System.exit(1);
+//           System.exit(1);
        }
     break;
     case 1:
 if(data.length!=opperandLocation+1){
     System.err.println("Syntax error in number of opperand");
     System.err.println("The error at line "+linecounter);
-    System.exit(1);
+//    System.exit(1);
 }
 
         break;
@@ -225,14 +221,14 @@ if(data.length!=opperandLocation+1){
         if(formates.getNumberOfRegister(data[opperandLocation])!=data.length-opperandLocation-1&&(data.length!=opperandLocation+2||data.length!=opperandLocation+3)){
             System.err.println("Syntax error in number of opperand");
             System.err.println("The error at line "+linecounter);
-            System.exit(1);
+//            System.exit(1);
         }if(data.length==opperandLocation+2) {
         try{
             InstructionFormate.Register.valueOf(data[opperandLocation+1]);
         }catch (IllegalArgumentException ex){
             System.err.println("this register does not exist");
             System.err.println("The error at line "+linecounter);
-            System.exit(1);
+//            System.exit(1);
         }
     }
         if(data.length==opperandLocation+3) {
@@ -246,7 +242,7 @@ if(data.length!=opperandLocation+1){
             }catch (IllegalArgumentException ex){
                 System.err.println("this register doesnot exist   or opperand 2 should be immediate number not label");
                 System.err.println("The error at line "+linecounter);
-                System.exit(1);
+//                System.exit(1);
             }
         }
     break;
@@ -254,7 +250,7 @@ if(data.length!=opperandLocation+1){
         if(formates.getNumberOfRegister(data[opperandLocation])!=data.length-opperandLocation-1&&data.length!=opperandLocation+2){
             System.err.println("Syntax error in number of opperand");
             System.err.println("The error at line "+linecounter);
-            System.exit(1);
+//            System.exit(1);
         }
 
         break;
@@ -262,7 +258,7 @@ if(data.length!=opperandLocation+1){
                 if(formates.getNumberOfRegister(data[opperandLocation])!=data.length-opperandLocation-1&&data.length!=opperandLocation+2){
                     System.err.println("Syntax error in number of opperand");
                     System.err.println("The error at line "+linecounter);
-                    System.exit(1);
+//                    System.exit(1);
                 }
 
                 break;
@@ -280,14 +276,14 @@ if(data.length!=opperandLocation+1){
                 symboltable.setAddress(data[0],programCounter);
                    else {
                        System.err.println("The label defined twise ");
-                       System.exit(1);
+//                       System.exit(1);
                    }
             }
 
             if (formates.getInstructionMap().get(data[1]) == null) {
-                System.err.println("syntax error");
+                System.err.println("UNDEFINED INSTRUCTION");
                 System.err.println("The error at line "+linecounter);
-                System.exit(1);
+//                System.exit(1);
             } else {
                 programCounter += formates.getFormate(data[1]);
               opperandLocation=1;

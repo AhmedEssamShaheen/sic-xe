@@ -42,7 +42,7 @@ public enum Register {
                     onRead();
            }catch(Exception ex){
                    System.err.println("The instruction File is not exist");
-                    System.exit(0);
+//                    System.exit(0);
            }
 
     }
