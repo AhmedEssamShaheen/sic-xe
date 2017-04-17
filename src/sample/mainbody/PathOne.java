@@ -10,7 +10,7 @@ public class PathOne implements Controlling{
     private String line;
     private int linecounter =0;
     private Boolean intiallocation=false;
-    private InstructionFormate formates=null;
+    private static InstructionFormate formates=null;
     private SymbolicTable symboltable=null;
     private int Start=0;
     private int dispalcement=-1;
@@ -18,31 +18,11 @@ public class PathOne implements Controlling{
     private Formatter updatedFile;
     private boolean basedefined=false;
 
-    public String[] concat(String[] a, String[] b) {
-        int aLen = a.length-1;
-        int bLen = b.length;
-        String[] c= new String[aLen+bLen];
-        System.arraycopy(a, 0, c, 0, aLen);
-        System.arraycopy(b, 0, c, aLen, bLen);
-        return c;
-    }
-
-    public SymbolicTable getSymboltable() {
-        return symboltable;
-    }
-
     public PathOne(String FileName) {
         file=FileName;
         formates=InstructionFormate.getInstructionTable();
         symboltable=SymbolicTable.getTable();
         onStart();
-    }
-    private String hexaOfString(String data){
-        int sum=0;
-        for(int i=0;i<data.length();i++){
-            sum=sum*100+data.charAt(i);
-        }
-        return sum!=0? sum+"":null;
     }
 
     @Override
@@ -56,12 +36,7 @@ public class PathOne implements Controlling{
         }
 
     }
-   private String checkspace(String line){
-       while(line.charAt(0)==' '){
-           line=line.substring(1);
-       }
-return line;
-   }
+
     @Override
     public  void onRead() {
 
@@ -288,7 +263,7 @@ if(data.length!=opperandLocation+1){
                 programCounter += formates.getFormate(data[1]);
               opperandLocation=1;
             }
-        }else if(data[0].equals("END")){
+        }else if(data.length>=2&&(data[0].equals("END")||data[1].equals("END"))){
 if(symboltable.getRowInformmation().get(data[1])==null) {
     System.err.println("This Label does not exist at which the code should start");
     System.err.println("The line of Error is "+linecounter);
@@ -303,7 +278,9 @@ if(symboltable.getRowInformmation().get(data[1])==null) {
             opperandLocation=0;
         }
     }
+    private void check4end(String [] data){
 
+    }
     private void getStartCounter(String[] data) {
      if(data[1].equals("START")){
          programCounter=Integer.parseInt(data[2],16);
@@ -336,8 +313,6 @@ if(symboltable.getRowInformmation().get(data[1])==null) {
     }
     private void addUpdate(int addres,String line){
         String code = Integer.toHexString(addres);
-
-
         PrintWriter outputFile= null;
         try {
             outputFile = new PrintWriter(new FileWriter("UpdateCode.txt", true));
@@ -346,7 +321,7 @@ if(symboltable.getRowInformmation().get(data[1])==null) {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        outputFile.printf("%s   %s\n",code,line);
+        outputFile.printf("%s   %s",code,line);
         outputFile.println();
         outputFile.close();
 
@@ -354,5 +329,34 @@ if(symboltable.getRowInformmation().get(data[1])==null) {
     private void closefile(){
         updatedFile.close();
     }
+    private String hexaOfString(String data){
+        int sum=0;
+        for(int i=0;i<data.length();i++){
+            sum=sum*100+data.charAt(i);
+        }
+        return sum!=0? sum+"":null;
+    }
+    private String checkspace(String line){
+        while(line.charAt(0)==' '){
+            line=line.substring(1);
+        }
+        return line;
+    }
+    public String[] concat(String[] a, String[] b) {
+        int aLen = a.length-1;
+        int bLen = b.length;
+        String[] c= new String[aLen+bLen];
+        System.arraycopy(a, 0, c, 0, aLen);
+        System.arraycopy(b, 0, c, aLen, bLen);
+        return c;
+    }
+    public SymbolicTable getSymboltable() {
+        return symboltable;
+    }
+    public static InstructionFormate getInstructionSet()
+    {
+        return formates;
+    }
+
 }
 

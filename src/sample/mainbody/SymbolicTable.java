@@ -69,7 +69,10 @@ private  String base =null;
     public  void setBase(String state){
         rowInformmation.get("Bse").base=state;
     }
-
+    public boolean exists(String Label)
+    {
+        return rowInformmation.containsKey(Label);
+    }
 
 }
 

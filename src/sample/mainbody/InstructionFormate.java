@@ -118,10 +118,9 @@ public enum Register {
         return instructionMap.get(Label).numberOfRegister2;
     }
 
-
-
-
-
-
+    public boolean Exists (String Label)
+    {
+        return instructionMap.containsKey(Label);
+    }
 
 }
