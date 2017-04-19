@@ -17,6 +17,9 @@ public class PathOne implements Controlling{
     private boolean breakflag=false;
     private Formatter updatedFile;
     private boolean basedefined=false;
+    private int noOferrors=0;
+    private  char INDEXED='#';
+    private  char INDIRECT='@';
 
     public PathOne(String FileName) {
         file=FileName;
@@ -32,6 +35,11 @@ public class PathOne implements Controlling{
             onRead();
         }catch(Exception ex){
             System.err.println("There is Error in the reader path one ");
+            noOferrors++;
+            System.out.println(ex.toString());
+
+//            symboltable.setRow("ErrOrS", programCounter);
+//            symboltable.setValue("ErrOrS", noOferrors);
            // System.exit(1);
         }
 
@@ -42,7 +50,7 @@ public class PathOne implements Controlling{
 
         try {
             while((line =reader.readLine())!=null){
-                checkspace(line);
+                 line =checkspace(line);
                 if(breakflag)break;
                 linecounter++;
                 openFile();
@@ -53,12 +61,15 @@ public class PathOne implements Controlling{
                     addUpdate(programCounter, line);
                 }handdleLine(data,line);
             }
-            if(!breakflag)
+            if(!breakflag) {
                 System.err.println(" END STATEMENT IS MISSED ");
-            closefile();
+                noOferrors++;
+                System.out.println(noOferrors+"                           no");
+            }            closefile();
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println("The error at line "+linecounter);
+            noOferrors++;
 //            System.exit(1);
 
         }
@@ -76,8 +87,8 @@ public class PathOne implements Controlling{
             defineMiddelLabel(data);
             reservedInstruction(data);
         }else {
-            System.err.println("Syntax error");
             System.err.println("The error at line "+linecounter);
+           noOferrors++;
 //            System.exit(1);
 
         }
@@ -90,6 +101,7 @@ public class PathOne implements Controlling{
              if(formates.getNumberOfRegister(data[opperandLocation])!=data.length-opperandLocation-1&&data.length!=opperandLocation+2){
                  System.err.println("Syntax error in number of opperand");
                  System.err.println("The error at line "+linecounter);
+                 noOferrors++;
 //                 System.exit(1);
              }
              String val[]=data[opperandLocation+1].split("'");
@@ -98,7 +110,7 @@ public class PathOne implements Controlling{
                      symboltable.setValue(data[opperandLocation-1],Integer.parseInt(hexaOfString(val[1]),16));
                      break;
                  case"X":programCounter+=Math.ceil(val[1].length()/2);
-                     symboltable.setValue(data[opperandLocation-1],Integer.parseInt(val[1],10));
+                     symboltable.setValue(data[opperandLocation-1],Integer.parseInt(val[1],16));
                      break;
              }
              break;
@@ -106,14 +118,16 @@ public class PathOne implements Controlling{
              if(formates.getNumberOfRegister(data[opperandLocation])!=data.length-opperandLocation-1&&data.length!=opperandLocation+2){
                  System.err.println("Syntax error in number of opperand");
                  System.err.println("The error at line "+linecounter);
+                 noOferrors++;
 //                 System.exit(1);
              }
              try{int value=Integer.parseInt(data[opperandLocation+1]);
              programCounter+=3;
-                 symboltable.setValue(data[opperandLocation-1],Integer.parseInt(data[opperandLocation+1],16));
+                 symboltable.setValue(data[opperandLocation-1],Integer.parseInt(data[opperandLocation+1],10));
              }catch (Exception ex){
                  System.err.println("you should add immediate value");
-
+                 System.err.println("the error line "+linecounter);
+                 noOferrors++;
              }
              break;
 
@@ -121,6 +135,8 @@ public class PathOne implements Controlling{
              if(formates.getNumberOfRegister(data[opperandLocation])!=data.length-opperandLocation-1&&data.length!=opperandLocation+2){
                  System.err.println("Syntax error in number of opperand");
                  System.err.println("The error at line "+linecounter);
+                 noOferrors++;
+
 //                 System.exit(1);
              }
              try{int value=Integer.parseInt(data[opperandLocation+1]);
@@ -135,6 +151,7 @@ public class PathOne implements Controlling{
              if(formates.getNumberOfRegister(data[opperandLocation])!=data.length-opperandLocation-1&&data.length!=opperandLocation+2){
                  System.err.println("Syntax error in number of opperand");
                  System.err.println("The error at line "+linecounter);
+                 noOferrors++;
 //                 System.exit(1);
              }
              try{int value=Integer.parseInt(data[opperandLocation+1]);
@@ -150,6 +167,7 @@ if(!basedefined) {
 }else{
     System.err.println(" The base is already defined");
     System.err.println("The error at line " +linecounter);
+    noOferrors++;
 }
 
 
@@ -162,17 +180,32 @@ if(!basedefined) {
     private void defineMiddelLabel(String[] data) {
     int iCounter=data.length-1-opperandLocation;
     int subopperanlaocation=opperandLocation;
+    boolean labelDefined=false;
     if(formates.getFormate(data[opperandLocation])!=2&&!data[opperandLocation].equals("BYTE"))
-    while(iCounter!=0){
+    while(iCounter!=0&&!labelDefined){
         subopperanlaocation++;
-       try{int i=Integer.parseInt(data[subopperanlaocation]) ;}catch (NumberFormatException ex) {
+        data[subopperanlaocation]=reservedchar(data[subopperanlaocation].charAt(0))?data[subopperanlaocation].substring(1):data[subopperanlaocation];
+
+        try{int i=Integer.parseInt(data[subopperanlaocation]) ;
+        }catch (NumberFormatException ex) {
            if(symboltable.getRowInformmation().get(data[subopperanlaocation])==null)
            symboltable.setRow(data[subopperanlaocation], -1);
+           labelDefined=true;
        }
            iCounter--;
 
     }
+//        System.out.println(data[subopperanlaocation]);
 
+    }
+
+    private boolean reservedchar(char c) {
+    switch (c){
+        case '@':case '#':
+            return true;
+            default:
+                return false;
+    }
     }
 
     private void checkOperandNumber(String[] data) {
@@ -181,6 +214,8 @@ if(!basedefined) {
        if(formates.getNumberOfRegister(data[opperandLocation])!=data.length-opperandLocation-1&&data.length!=opperandLocation+2){
            System.err.println("Syntax error in number of opperand");
            System.err.println("The error at line "+linecounter);
+           noOferrors++;
+
 //           System.exit(1);
        }
     break;
@@ -188,6 +223,8 @@ if(!basedefined) {
 if(data.length!=opperandLocation+1){
     System.err.println("Syntax error in number of opperand");
     System.err.println("The error at line "+linecounter);
+    noOferrors++;
+
 //    System.exit(1);
 }
 
@@ -196,6 +233,8 @@ if(data.length!=opperandLocation+1){
         if(formates.getNumberOfRegister(data[opperandLocation])!=data.length-opperandLocation-1&&(data.length!=opperandLocation+2||data.length!=opperandLocation+3)){
             System.err.println("Syntax error in number of opperand");
             System.err.println("The error at line "+linecounter);
+            noOferrors++;
+
 //            System.exit(1);
         }if(data.length==opperandLocation+2) {
         try{
@@ -203,6 +242,7 @@ if(data.length!=opperandLocation+1){
         }catch (IllegalArgumentException ex){
             System.err.println("this register does not exist");
             System.err.println("The error at line "+linecounter);
+            noOferrors++;
 //            System.exit(1);
         }
     }
@@ -217,14 +257,21 @@ if(data.length!=opperandLocation+1){
             }catch (IllegalArgumentException ex){
                 System.err.println("this register doesnot exist   or opperand 2 should be immediate number not label");
                 System.err.println("The error at line "+linecounter);
+                noOferrors++;
 //                System.exit(1);
             }
         }
     break;
     case 3:
-        if(formates.getNumberOfRegister(data[opperandLocation])!=data.length-opperandLocation-1&&data.length!=opperandLocation+2){
-            System.err.println("Syntax error in number of opperand");
-            System.err.println("The error at line "+linecounter);
+        boolean indexed=false;
+            if(data.length==opperandLocation+3){
+                if(!data[data.length-1].equals("X"))
+                    indexed = true;
+            }
+             if(formates.getNumberOfRegister(data[opperandLocation])!=data.length-opperandLocation-1&&data.length!=opperandLocation+2&&indexed){
+                System.err.println("Syntax error in number of opperand");
+                System.err.println("The error at line "+linecounter);
+                noOferrors++;
 //            System.exit(1);
         }
 
@@ -233,6 +280,7 @@ if(data.length!=opperandLocation+1){
                 if(formates.getNumberOfRegister(data[opperandLocation])!=data.length-opperandLocation-1&&data.length!=opperandLocation+2){
                     System.err.println("Syntax error in number of opperand");
                     System.err.println("The error at line "+linecounter);
+                    noOferrors++;
 //                    System.exit(1);
                 }
 
@@ -251,6 +299,9 @@ if(data.length!=opperandLocation+1){
                 symboltable.setAddress(data[0],programCounter);
                    else {
                        System.err.println("The label defined twise ");
+                       System.err.println("The error line"+ linecounter);
+                       noOferrors++;
+
 //                       System.exit(1);
                    }
             }
@@ -267,12 +318,17 @@ if(data.length!=opperandLocation+1){
 if(symboltable.getRowInformmation().get(data[1])==null) {
     System.err.println("This Label does not exist at which the code should start");
     System.err.println("The line of Error is "+linecounter);
+    noOferrors++;
+
 }else {
     programCounter = symboltable.getAddress(data[1]);
     opperandLocation = 0;
     dispalcement = programCounter-Start;
     breakflag = true;
-}  }else{
+}
+            symboltable.setRow("ErrOrS", programCounter);
+            symboltable.setValue("ErrOrS", noOferrors);
+        }else{
 
             programCounter += formates.getFormate(data[0]);
             opperandLocation=0;
@@ -288,6 +344,9 @@ if(symboltable.getRowInformmation().get(data[1])==null) {
          intiallocation=true;
      }else {
          System.err.println("START is missed to begin running the code");
+         System.err.println("the error line "+linecounter);
+         noOferrors++;
+
      }
 
     }

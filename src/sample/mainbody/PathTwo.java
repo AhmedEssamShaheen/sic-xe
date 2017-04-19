@@ -2,6 +2,7 @@ package sample.mainbody;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 
 public class PathTwo implements Controlling {
@@ -11,30 +12,37 @@ public class PathTwo implements Controlling {
     private boolean breakflag=false;
     private FileInputStream fstream = null;
     private String strLine;
-    private ArrayList<String> HRecord;
+    private ArrayList<String> TRecord;
     private SymbolicTable SymbTab;
     private InstructionFormate InstructionSet;
     private ObjectCode ObjectCode;
     private int PC;
+    private boolean indexed =false;
     private final int BASE;
     private BufferedReader reader;
 
     public PathTwo() {
         this.one = new PathOne("E:\\Ahmed\\GITHUB_RES\\Git2\\sic-xe\\src\\sample\\files/code.txt");
-        checkUndefinedAddress(one.getSymboltable());
         if(one.getSymboltable().getRowInformmation().get("Bse")!=null)
              BASE = one.getSymboltable().getAddress(one.getSymboltable().getBase());
         else
              BASE = 0;
+
+
     }
 
     public PathTwo (String FileName)
     {   this();
         this.FileName=FileName;
-        HRecord= new ArrayList<String>();
+        TRecord= new ArrayList<String>();
         SymbTab=SymbolicTable.getTable();
         InstructionSet=PathOne.getInstructionSet();
-        onStart();
+        System.out.println(SymbolicTable.getTable().getRowInformmation().toString());
+        if(SymbolicTable.getTable().getValue("ErrOrS")==0&&checkUndefinedAddress(one.getSymboltable()))  {
+            onStart();
+        }else{
+            System.err.println("WE couldnot formate object code because there is errors");
+        }
 
     }
 
@@ -49,75 +57,64 @@ public class PathTwo implements Controlling {
         }
         onRead();
     }
-
+    public String[] concat(String[] a, String[] b) {
+        int aLen = a.length-1;
+        int bLen = b.length;
+        String[] c= new String[aLen+bLen];
+        System.arraycopy(a, 0, c, 0, aLen);
+        System.arraycopy(b, 0, c, aLen, bLen);
+        return c;
+    }
     @Override
     public void onRead() {
-
         try {
             mainloop:
             while ((strLine = reader.readLine()) != null)   {
-                String[] tokens = strLine.split(delims);
+                String[] data1 = strLine.split("[ ]+");
+                String []data2=data1[data1.length-1].split(",");
+                String [] tokens  =concat(data1, data2);
+                int location=0;
+                while(InstructionFormate.getInstructionTable().getInstructionMap().get(tokens[location])==null)
+                    location++;
+                 if(tokens[location].equals("END"))
+                     break mainloop;
 
-                if(tokens[1].equals("END"))
-                {
-                    break mainloop;
-                }
-                else if((SymbTab.exists(tokens[1])&&tokens[2].equals("END")))
-                {
-                    break;
-                }
-                else if(tokens[1].equals("START")) continue;
-                else if((SymbTab.exists(tokens[1])&&tokens[2].equals("START")) ) continue;
-
-                PC=Integer.valueOf(tokens[0],16);// program counter lazem ykoon int msh hynfa3 ykon 2l value in hexa
-
-                if(SymbTab.exists(tokens[1]))
-                {if (InstructionSet.getFormate(tokens[2])==1) handleLine(tokens[2]);
-                else handleLine(tokens[2] ,tokens[3]);}
-                else if(InstructionSet.Exists(tokens[1])){
-                    if (InstructionSet.getFormate(tokens[1])==1) handleLine(tokens[1]);
-                    else
-                        if(tokens.length>=3)
-                        handleLine(tokens[1] , tokens[2]);
+                if(tokens[tokens.length-1].equals("X")&&InstructionFormate.getInstructionTable().getFormate(tokens[location])>=3) {
+                    tokens = Arrays.copyOfRange(tokens, 0, tokens.length - 1);
+                    indexed=true;
                 }
 
+                ObjectCode=new ObjectCode(tokens,location,InstructionFormate.getInstructionTable().getFormate(tokens[location
+                        ]),BASE,indexed?"X":"x");
+                System.out.println(ObjectCode.getObjectCode());
+                TRecord.add(ObjectCode.getObjectCode());
             }
         } catch (IOException e) {
             System.err.println("Empty File!");
             e.printStackTrace();
         }
+        updateTRecord(TRecord);
 
     }
 
-    private void handleLine(String Mnemonic)
-    {
-        //System.out.println(Mnemonic);
-        ObjectCode = new ObjectCode(Mnemonic,1);
-        HRecord.add(ObjectCode.getObjectCode());
-        //System.out.println(ObjectCode.getObjectCode());
-    }
-    private void handleLine(String Mnemonic , String Operand) {
-        System.out.println(Mnemonic + "  " + InstructionSet.getNumberOfRegister2(Mnemonic));
+    private void updateTRecord(ArrayList<String> tRecord) {
 
-        ObjectCode = new ObjectCode(Mnemonic, Operand, Operand.charAt(0) ,
-                InstructionSet.getFormate(Mnemonic),InstructionSet.getNumberOfRegister(Mnemonic),
-                InstructionSet.getNumberOfRegister2(Mnemonic) , PC , BASE);
-        HRecord.add(ObjectCode.getObjectCode());
-        //System.out.println(ObjectCode.getObjectCode());
+
+
+
     }
 
 
-
-
-
-    private void checkUndefinedAddress(SymbolicTable symboltable) {
+    private boolean checkUndefinedAddress(SymbolicTable symboltable) {
         for(Map.Entry entery:symboltable.getRowInformmation().entrySet()){
 
             if(symboltable.getAddress(entery.getKey().toString())==-1) {
                 System.err.println("There is undifined label  "+entery.getKey());
-                break;
+
+                return false;
             }
         }
+        return true;
 
     }
 
