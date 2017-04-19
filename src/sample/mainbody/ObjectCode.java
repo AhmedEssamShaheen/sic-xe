@@ -55,8 +55,15 @@ public class ObjectCode {
             case 0:
                 if (mnemonic.equals("START") || mnemonic.equals("END"))
                     break;
-                if (mnemonic.equals("BYTE") || mnemonic.equals("WORD"))
+                if (mnemonic.equals("BYTE") || mnemonic.equals("WORD")) {
                     objectCode = Integer.toHexString(SymbolicTable.getTable().getValue(data[1]));
+               if (mnemonic.equals("BYTE")&&objectCode.length()%2!=0){
+                   objectCode="0"+objectCode;
+               }
+               while((mnemonic.equals("WORD")&&objectCode.length()<6)){
+                   objectCode="0"+objectCode;
+               }
+                }
                 if (mnemonic.equals("RESB") || mnemonic.equals("RESW"))
                     objectCode = "Sep";
                 break;
@@ -125,7 +132,7 @@ public class ObjectCode {
                         objectCode = "     **********ERROR! Displacement exceeds limit**********";
 
                 }
-                else objectCode = Integer.toHexString(Integer.parseInt(InstructionSet.getOppCode(mnemonic), 16))
+                else objectCode = Integer.toHexString(Integer.parseInt(InstructionSet.getOppCode(mnemonic), 16)+3)
                         + "0000";
 
 
