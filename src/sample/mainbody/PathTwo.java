@@ -1,11 +1,12 @@
 package sample.mainbody;
 
+import com.sun.org.apache.xpath.internal.SourceTree;
+
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
 
 public class PathTwo implements Controlling {
+    private final int diplacement;
     private PathOne one ;
     private String FileName;
     private String delims = "[ ]+";
@@ -20,15 +21,22 @@ public class PathTwo implements Controlling {
     private boolean indexed =false;
     private final int BASE;
     private BufferedReader reader;
-
+    private ArrayList<String>modify;
+    private ArrayList<String>Adresses;
+    private String fileName="COPY";
+    private final int start;
+    private ArrayList<String> lastlist;
+    Formatter updatedFile;
     public PathTwo() {
         this.one = new PathOne("E:\\Ahmed\\GITHUB_RES\\Git2\\sic-xe\\src\\sample\\files/code.txt");
         if(one.getSymboltable().getRowInformmation().get("Bse")!=null)
              BASE = one.getSymboltable().getAddress(one.getSymboltable().getBase());
         else
              BASE = 0;
-
-
+        modify=new ArrayList<>();
+        Adresses=new ArrayList<>();
+        diplacement=one.getDispalcement();
+        start=one.getStart();
     }
 
     public PathTwo (String FileName)
@@ -70,6 +78,7 @@ public class PathTwo implements Controlling {
         try {
             mainloop:
             while ((strLine = reader.readLine()) != null)   {
+                indexed=false;
                 String[] data1 = strLine.split("[ ]+");
                 String []data2=data1[data1.length-1].split(",");
                 String [] tokens  =concat(data1, data2);
@@ -83,27 +92,129 @@ public class PathTwo implements Controlling {
                     tokens = Arrays.copyOfRange(tokens, 0, tokens.length - 1);
                     indexed=true;
                 }
-
+                if(InstructionFormate.getInstructionTable().getFormate(tokens[location])==4) {
+                 String tem=tokens[location+1].substring(1);
+                    try{
+                        int temp=Integer.parseInt(tem);
+                    }catch (Exception ex){
+                        modify.add(tokens[0]);
+                    }
+                }
+                if(InstructionFormate.getInstructionTable().getFormate(tokens[location])!=0||(tokens[location].equals("BYTE")||tokens[location].equals("WORD"))
+                        ||(tokens[location].equals("RESB")||tokens[location].equals("RESW"))) {
+                    Adresses.add(tokens[0]);
+                }
                 ObjectCode=new ObjectCode(tokens,location,InstructionFormate.getInstructionTable().getFormate(tokens[location
-                        ]),BASE,indexed?"X":"x");
-                System.out.println(ObjectCode.getObjectCode());
+                        ]),BASE,indexed?"X":"l");
                 TRecord.add(ObjectCode.getObjectCode());
             }
         } catch (IOException e) {
             System.err.println("Empty File!");
             e.printStackTrace();
         }
-        updateTRecord(TRecord);
+        updateTRecord();
+//        modifyList();
+    }
+private void modifyList(){
+    lastlist=new ArrayList<>();
+        Iterator<String> it = TRecord.iterator();
+    while (it.hasNext()) {
+     String tem=it.next();
+     if(tem==null)
+         it.remove();
+}
+    Iterator<String> i = Adresses.iterator();
+    Iterator<String> t = TRecord.iterator();
+    while (i.hasNext()) {
+        String tem=i.next();
+        String te1=t.next();
+        lastlist.add(tem+"#"+te1);
 
     }
+}
+    private void updateTRecord() {
+        modifyList();
+        openFile();
+           String start=Integer.toHexString(this.start);
+           while(start.length()<6)
+               start="0"+start;
+           String disp=Integer.toHexString(diplacement);
+        while(disp.length()<6)
+            disp="0"+disp;
+           String line="H"+"^"+fileName+"^"+start+"^"+disp;
+           addUpdate(line);
+        String []temp;
+        String rec="^";
+        boolean state=false;
+        String beginadress = null;
+        Iterator<String> List = lastlist.iterator();
+        loop:
+        while (List.hasNext())
+        {
+            String val=List.next();
+            temp=val.split("#");
 
-    private void updateTRecord(ArrayList<String> tRecord) {
+            if(!state){
+                beginadress=temp[0];
+                while(beginadress.length()<6){
+                    beginadress="0"+beginadress;
+                }
+                state=true;
+            }
+            if(!temp[1].equals("Sep")&&(countRecord(rec)+temp[1].length())/2<=30){
+                rec+=temp[1]+"^";
+            }
+            else if(countRecord(rec)!=0){
+                String temper=rec;
+                String length=Integer.toHexString(countRecord(rec)/2);
+                length=length.length()!=2?"0"+length:length;
+                String trec="T"+"^"+beginadress+"^"+length+rec;
+                trec=trec.substring(0,trec.length()-1);
+                addUpdate(trec);
+                state=false;
+                rec="^";
+                if((countRecord(temper)+temp[1].length())/2>30) {
+                beginadress=temp[0];
+                state=true;
+                rec+=temp[1]+"^";
+                }
+            }else  state=false;
+            }
+          if(countRecord(rec)!=0){
+              String length=Integer.toHexString(countRecord(rec)/2);
+              length=length.length()!=2?"0"+length:length;
+              String trec="T"+"^"+beginadress+"^"+length+rec;
+              trec=trec.substring(0,trec.length()-1);
+              addUpdate(trec);
+
+          }
 
 
+        Iterator<String> l = modify.iterator();
+        while (l.hasNext()) {
+            Integer i=new Integer(l.next());
+            i++;
+            String loc=Integer.toString(i);
+            while(loc.length()<6){
+                loc="0"+loc;
+            }
+            String mod="M^"+loc+"^05";
+            addUpdate(mod);
 
+
+        }
 
     }
-
+private int countRecord(String line){
+       int i=0;
+       int counter=0;
+       while (i<line.length()){
+           if(line.charAt(i)!='^')
+               counter++;
+        i++;
+       }
+       return counter;
+}
 
     private boolean checkUndefinedAddress(SymbolicTable symboltable) {
         for(Map.Entry entery:symboltable.getRowInformmation().entrySet()){
@@ -116,6 +227,34 @@ public class PathTwo implements Controlling {
         }
         return true;
 
+    }
+    private void openFile(){
+        try {
+
+             updatedFile = new Formatter(new BufferedWriter(new FileWriter("Record.txt", true)));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+    private void addUpdate(String line){
+        PrintWriter outputFile= null;
+        try {
+            outputFile = new PrintWriter(new FileWriter("Record.txt", true));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        outputFile.printf("%s",line);
+        outputFile.println();
+        outputFile.close();
+
+    }
+    private void closefile(){
+        updatedFile.close();
     }
 
 

@@ -1,6 +1,8 @@
 package sample.mainbody;
 import java.io.*;
 import java.util.Formatter;
+import java.util.HashSet;
+import java.util.Iterator;
 
 public class PathOne implements Controlling{
     private int programCounter=0;
@@ -18,14 +20,21 @@ public class PathOne implements Controlling{
     private Formatter updatedFile;
     private boolean basedefined=false;
     private int noOferrors=0;
-    private  char INDEXED='#';
-    private  char INDIRECT='@';
-
+    private HashSet<String> litteral;
     public PathOne(String FileName) {
         file=FileName;
         formates=InstructionFormate.getInstructionTable();
         symboltable=SymbolicTable.getTable();
+        litteral=new HashSet<String>();
         onStart();
+    }
+
+    public int getStart() {
+        return Start;
+    }
+
+    public int getDispalcement() {
+        return dispalcement;
     }
 
     @Override
@@ -51,7 +60,8 @@ public class PathOne implements Controlling{
         try {
             while((line =reader.readLine())!=null){
                  line =checkspace(line);
-                if(breakflag)break;
+                if(breakflag)
+                break;
                 linecounter++;
                 openFile();
                 String[] data1 = line.split("[ ]+");
@@ -64,16 +74,40 @@ public class PathOne implements Controlling{
             if(!breakflag) {
                 System.err.println(" END STATEMENT IS MISSED ");
                 noOferrors++;
-                System.out.println(noOferrors+"                           no");
             }            closefile();
         } catch (IOException e) {
             e.printStackTrace();
-            System.err.println("The error at line "+linecounter);
+            System.err.println("The error at line " + linecounter);
             noOferrors++;
 //            System.exit(1);
 
         }
+        litteralEnd();
+        }
 
+    private void litteralEnd() {
+                String temp,temp1;
+        Iterator<String> itr=litteral.iterator();
+        while(itr.hasNext()){
+           temp= itr.next();
+           temp1=temp.substring(1);
+            String val[]=temp1.split("'");
+
+            switch(val[0]){
+                case"C":
+                    System.out.println(Integer.parseInt(hexaOfString(val[1]),16));
+                    symboltable.setValue(temp,Integer.parseInt(hexaOfString(val[1]),16));
+                    symboltable.setAddress(temp,programCounter);
+                    programCounter+=val[1].length();
+                    break;
+                case"X":
+                    symboltable.setValue(temp,Integer.parseInt(val[1],16));
+                symboltable.setAddress(temp,programCounter);
+                    programCounter+=Math.ceil(val[1].length()/2);
+                    break;
+            }
+            itr.remove();
+        }
     }
 
     public void handdleLine(String[] data,String line) {
@@ -161,7 +195,7 @@ public class PathOne implements Controlling{
              }
              break;
          case  "BASE":
-if(!basedefined) {
+      if(!basedefined) {
     symboltable.setRow("Bse", programCounter);
     symboltable.setBase(data[opperandLocation + 1]);
 }else{
@@ -169,8 +203,15 @@ if(!basedefined) {
     System.err.println("The error at line " +linecounter);
     noOferrors++;
 }
-
-
+             break;
+         case "LTORG":
+             if(formates.getNumberOfRegister(data[opperandLocation])!=data.length-opperandLocation-1&&data.length!=opperandLocation+1){
+                 System.err.println("Syntax error in number of opperand");
+                 System.err.println("The error at line "+linecounter);
+                 noOferrors++;
+//                 System.exit(1);
+             }
+             litteralEnd();
              break;
 
 
@@ -185,8 +226,11 @@ if(!basedefined) {
     while(iCounter!=0&&!labelDefined){
         subopperanlaocation++;
         data[subopperanlaocation]=reservedchar(data[subopperanlaocation].charAt(0))?data[subopperanlaocation].substring(1):data[subopperanlaocation];
-
+           if(data[subopperanlaocation].charAt(0)=='=')
+               litteral.add(data[subopperanlaocation]);
         try{int i=Integer.parseInt(data[subopperanlaocation]) ;
+//            System.out.println(i);
+
         }catch (NumberFormatException ex) {
            if(symboltable.getRowInformmation().get(data[subopperanlaocation])==null)
            symboltable.setRow(data[subopperanlaocation], -1);
@@ -321,7 +365,6 @@ if(symboltable.getRowInformmation().get(data[1])==null) {
     noOferrors++;
 
 }else {
-    programCounter = symboltable.getAddress(data[1]);
     opperandLocation = 0;
     dispalcement = programCounter-Start;
     breakflag = true;
@@ -350,7 +393,6 @@ if(symboltable.getRowInformmation().get(data[1])==null) {
      }
 
     }
-
     private boolean onlyOneInstruct(String[] data) {
     int counter=0;
         for(String instruct:data )

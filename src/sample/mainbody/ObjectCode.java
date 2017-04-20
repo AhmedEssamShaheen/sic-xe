@@ -1,6 +1,9 @@
 package sample.mainbody;
 
+import com.sun.org.apache.xpath.internal.SourceTree;
+
 import java.lang.invoke.SwitchPoint;
+import java.util.ArrayList;
 
 public class ObjectCode {
 
@@ -20,53 +23,40 @@ public class ObjectCode {
     private final static String ZEROES5 = "00000";
     private int  locationMnemonic;
     private String []data;
-    private String indexed;
-
-    public void setIndexed(String indexed) {
-        this.indexed = indexed;
-    }
-
-    public ObjectCode (String [] data, int locationMnemonic, int format, int base  )
+    private final String indexed;
+    private int  xbpe =0;
+    public ObjectCode (String [] data, int locationMnemonic, int format, int base ,String indexed )
     {
         this.data=data;
         mnemonic=data[locationMnemonic];
         pc=Integer.valueOf(data[0],16)+format;
+        this.base=base;
         this.locationMnemonic=locationMnemonic;
         this.format=format;
+        this.indexed=indexed;
           numberOfOperands=InstructionFormate.getInstructionTable().getNumberOfRegister(mnemonic);
           numberOfRegisters=InstructionFormate.getInstructionTable().getNumberOfRegister2(mnemonic);
         InstructionSet = PathOne.getInstructionSet();
         setInfo();
 
-    }
-    private void setformate(String []data){
-    }
 
-
-
-
-    public ObjectCode (String [] data, int locationMnemonic, int format, int base, String indexed )
-    {
-        this(data,locationMnemonic,format,base);
-        this.indexed=indexed;
     }
     private void setInfo() {
         switch (format) {
             case 0:
-                if (mnemonic.equals("START") || mnemonic.equals("END"))
-                    break;
-                if (mnemonic.equals("BYTE") || mnemonic.equals("WORD")) {
-                    objectCode = Integer.toHexString(SymbolicTable.getTable().getValue(data[1]));
-               if (mnemonic.equals("BYTE")&&objectCode.length()%2!=0){
-                   objectCode="0"+objectCode;
-               }
-               while((mnemonic.equals("WORD")&&objectCode.length()<6)){
-                   objectCode="0"+objectCode;
-               }
-                }
-                if (mnemonic.equals("RESB") || mnemonic.equals("RESW"))
-                    objectCode = "Sep";
-                break;
+                            if (mnemonic.equals("START") || mnemonic.equals("END"))
+                                     break;
+                            if (mnemonic.equals("BYTE") || mnemonic.equals("WORD")) {
+                                     objectCode = Integer.toHexString(SymbolicTable.getTable().getValue(data[1]));
+                            if (mnemonic.equals("BYTE")&&objectCode.length()%2!=0)
+                                     objectCode="0"+objectCode;
+                            while((mnemonic.equals("WORD")&&objectCode.length()<6))
+                                      objectCode="0"+objectCode;
+
+                            }
+                            if (mnemonic.equals("RESB") || mnemonic.equals("RESW"))
+                                      objectCode = "Sep";
+                            break;
             case 1:
                 objectCode = InstructionFormate.getInstructionTable().getOppCode(mnemonic);
                 break;
@@ -79,14 +69,14 @@ public class ObjectCode {
                         ;//check if shift greater than F
                 break;
             case 3:
-
-                int xbpe =0;
                 int Address;
                 String label;
                 boolean  immediate=false;
                 boolean value=false;
                 if (numberOfOperands==1)
                 {
+                     if(indexed.equals("X"))xbpe=8;
+
                     if (reservedchar(data[locationMnemonic + 1].charAt(0))) {
                         label = data[locationMnemonic + 1].substring(1);
                         try{
@@ -96,13 +86,13 @@ public class ObjectCode {
                             value=true;
                         }
                         if(data[locationMnemonic+1].charAt(0)=='#'&&value) {
-                            xbpe = handleX(indexed);
+                            xbpe+= handleX(indexed);
                             immediate=true;
                         }else
-                        xbpe = handleX(indexed) + handleB(Address) + handleP(Address);
+                        xbpe+= handleX(indexed) + handleB(Address) + handleP(Address);
                     }else{
                         Address = SymbolicTable.getTable().getAddress(data[data.length-1]);
-                        xbpe = handleX( indexed) + handleB(Address) + handleP(Address);
+                        xbpe+= handleX( indexed) + handleB(Address) + handleP(Address);
                     }
 
                     if (handleP(Address)!=0)
@@ -137,7 +127,32 @@ public class ObjectCode {
 
 
              break;
+            case 4:
 
+                boolean val=false;
+                int Addres;
+                if (reservedchar(data[locationMnemonic + 1].charAt(0))) {
+                    label = data[locationMnemonic + 1].substring(1);
+                    try{
+                        Addres = SymbolicTable.getTable().getAddress(label);
+                    }catch (NullPointerException EX){
+                        Addres = Integer.parseInt(label);
+                    }
+                }else{
+                    Addres = SymbolicTable.getTable().getAddress(data[data.length-1]);
+                }
+
+                    xbpe = 1 + handleX(indexed);
+                    String add=Integer.toHexString(Addres);
+                    while(add.length()<5)
+                        add="0"+add;
+                    objectCode = Integer.toHexString((Integer.parseInt(InstructionSet.getOppCode(mnemonic), 16)
+                                + handleNI(data[locationMnemonic+1].charAt(0)+"")))
+                                + Integer.toHexString(xbpe) +add;
+
+
+
+                break;
         }
         }
 
@@ -150,100 +165,6 @@ public class ObjectCode {
                 return false;
         }}
 
-//    public ObjectCode (String mnemonic , String operand, char addressingmode , int format, int Nop ,
-//                       int Nor ,int pc , int base)
-//    {
-//        Mnemonic=mnemonic;
-//        Operand=operand;
-//        AddressingMode=addressingmode;
-//        NumberOfOperands=Nop;
-//        NumberOfRegisters=Nor;
-//        Format=format;
-//        PC=pc;
-//        BASE = base;
-//        Operands = Operand.split("[,]");
-//        InstructionSet = PathOne.getInstructionSet();
-//        SymTab=SymbolicTable.getTable();
-//        Start();
-//    }
-
-
-//    public void setObjectCode(String objectCode) {
-//        ObjectCode = objectCode;
-//    }
-//
-//    private void Start()
-//    {
-//        switch(Format)
-//        {
-//            case 1: ObjectCode = InstructionSet.getOppCode(Mnemonic);
-//            case 2:
-//            {
-//            try{if (NumberOfOperands==2){
-//                if (NumberOfRegisters ==2) ObjectCode= InstructionSet.getOppCode(Mnemonic)
-//                        +  InstructionFormate.Register.valueOf(Operands[0])
-//                        +  InstructionFormate.Register.valueOf(Operands[1]);
-//                else ObjectCode= InstructionSet.getOppCode(Mnemonic) +  InstructionFormate.Register.valueOf(Operands[0])
-//                        + Integer.toHexString(Integer.parseInt(Operands[1])) ;}
-//            else if(NumberOfOperands==1){
-//                if(NumberOfRegisters==1)
-//                    ObjectCode= InstructionSet.getOppCode(Mnemonic) +   InstructionFormate.Register.valueOf(Operands[0])
-//                            + "0000" ;
-//                else ObjectCode= InstructionSet.getOppCode(Mnemonic)  + "0"
-//                        +Integer.toHexString(Integer.parseInt(Operands[1])) ;}}catch (Exception e){
-//                System.err.println("this register doesnot exists");
-//            }}
-//            case 3:
-//            {
-//                int xbpe =0;
-//                if (NumberOfOperands==1)
-//                {
-//                    int Address = SymTab.getAddress(Operands[0]);
-//                    xbpe = handleX(Operands) + handleB(Address) + handleP(Address);
-//                    if (handleP(Address)!=0)
-//                    {
-//                        String displacement = Integer.toHexString(Address - PC);
-//
-//                        ObjectCode = Integer.toHexString((Integer.parseInt(InstructionSet.getOppCode(Mnemonic), 16)
-//                                + handleNI(Operands[0])))+ Integer.toHexString(xbpe)+""+(displacement.length()< 3 ? ZEROES3.substring(displacement.length())+ displacement
-//                                : displacement);
-//                        System.out.println(ObjectCode);
-//                    }
-//                    else if (handleB(Address)!=0)
-//                    {
-//                        String displacement = Integer.toHexString(Address - BASE);
-//                        ObjectCode = Integer.toHexString((Integer.parseInt(InstructionSet.getOppCode(Mnemonic), 16)
-//                                + handleNI(Operands[0])))
-//                                + Integer.toHexString(xbpe) +
-//                                (displacement.length()< 3 ? ZEROES3.substring(displacement.length())+ displacement
-//                                        : displacement) ;
-//                    }
-//                    else
-//                        ObjectCode = "     **********ERROR! Displacement exceeds limit**********";
-//
-//                }
-//                else ObjectCode = Integer.toHexString(Integer.parseInt(InstructionSet.getOppCode(Mnemonic), 16))
-//                        + "0000";
-//
-//            }
-//
-//            case 4: {
-//                if (Operands != null) {
-//                    int Address = SymTab.getAddress(Operands[0]);
-//                    int xbpe = 1 + handleX(Operands);
-//                        ObjectCode = Integer.toHexString((Integer.parseInt(InstructionSet.getOppCode(Mnemonic), 16)
-//                                + handleNI(Operands[0])))
-//                                + Integer.toHexString(xbpe) +
-//                                (Integer.toHexString(Address).length() < 5 ?
-//                                        ZEROES5.substring(Integer.toHexString(Address).length())
-//                                                + Address : Address);
-//                }
-//            }
-//        }
-//        System.out.println(ObjectCode);
-//
-//    }
-//
     private int registers(String str){
         switch (str){
             case "A":return 0;

@@ -46,7 +46,7 @@ private  String base =null;
 
         @Override
         public String toString() {
-            return "The Address is "+address+" The value is " +value;
+            return "The Address is "+address+" The value is " +value+" The base is " +base;
         }
     }
 
