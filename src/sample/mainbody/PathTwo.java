@@ -9,12 +9,8 @@ public class PathTwo implements Controlling {
     private final int diplacement;
     private PathOne one ;
     private String FileName;
-    private String delims = "[ ]+";
-    private boolean breakflag=false;
-    private FileInputStream fstream = null;
     private String strLine;
     private ArrayList<String> TRecord;
-    private SymbolicTable SymbTab;
     private InstructionFormate InstructionSet;
     private ObjectCode ObjectCode;
     private int PC;
@@ -23,7 +19,7 @@ public class PathTwo implements Controlling {
     private BufferedReader reader;
     private ArrayList<String>modify;
     private ArrayList<String>Adresses;
-    private String fileName="COPY";
+    private String fileName;
     private final int start;
     private ArrayList<String> lastlist;
     Formatter updatedFile;
@@ -39,12 +35,10 @@ public class PathTwo implements Controlling {
         fileName=one.getProjectName();
         start=one.getStart();
     }
-
     public PathTwo (String FileName)
     {   this();
         this.FileName=FileName;
         TRecord= new ArrayList<String>();
-        SymbTab=SymbolicTable.getTable();
         InstructionSet=PathOne.getInstructionSet();
         System.out.println(SymbolicTable.getTable().getRowInformmation().toString());
         if(SymbolicTable.getTable().getValue("ErrOrS")==0&&checkUndefinedAddress(one.getSymboltable()))  {
@@ -54,8 +48,6 @@ public class PathTwo implements Controlling {
         }
 
     }
-
-
     @Override
     public void onStart() {
         try {
@@ -116,7 +108,7 @@ public class PathTwo implements Controlling {
         updateTRecord();
 //        modifyList();
     }
-private void modifyList(){
+    private void modifyList(){
     lastlist=new ArrayList<>();
         Iterator<String> it = TRecord.iterator();
     while (it.hasNext()) {
@@ -206,7 +198,7 @@ private void modifyList(){
         }
 
     }
-private int countRecord(String line){
+    private int countRecord(String line){
        int i=0;
        int counter=0;
        while (i<line.length()){
@@ -216,7 +208,6 @@ private int countRecord(String line){
        }
        return counter;
 }
-
     private boolean checkUndefinedAddress(SymbolicTable symboltable) {
         for(Map.Entry entery:symboltable.getRowInformmation().entrySet()){
 
@@ -257,6 +248,4 @@ private int countRecord(String line){
     private void closefile(){
         updatedFile.close();
     }
-
-
 }

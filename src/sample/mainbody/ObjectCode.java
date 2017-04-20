@@ -1,10 +1,4 @@
 package sample.mainbody;
-
-import com.sun.org.apache.xpath.internal.SourceTree;
-
-import java.lang.invoke.SwitchPoint;
-import java.util.ArrayList;
-
 public class ObjectCode {
 
     private String mnemonic;
@@ -155,8 +149,6 @@ public class ObjectCode {
                 break;
         }
         }
-
-
     private boolean reservedchar(char c) {
         switch (c){
             case '@':case '#':
@@ -164,7 +156,6 @@ public class ObjectCode {
             default:
                 return false;
         }}
-
     private int registers(String str){
         switch (str){
             case "A":return 0;
@@ -191,7 +182,6 @@ public class ObjectCode {
             if(data[data.length-1].charAt(0) == 'X') return 8;
         return 0;
     }
-
     private int handleP(int TA) {
         int displacement =  (TA) - pc;
         if (displacement >= ((-1)*2048) && displacement <= 2047) return 2;
