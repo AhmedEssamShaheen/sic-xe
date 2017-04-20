@@ -21,6 +21,7 @@ public class PathOne implements Controlling{
     private boolean basedefined=false;
     private int noOferrors=0;
     private HashSet<String> litteral;
+    private String projectName;
     public PathOne(String FileName) {
         file=FileName;
         formates=InstructionFormate.getInstructionTable();
@@ -59,11 +60,17 @@ public class PathOne implements Controlling{
 
         try {
             while((line =reader.readLine())!=null){
-                 line =checkspace(line);
+                String[]trial=line.split("//");
+                if(line.charAt(0)=='/')
+                    continue;
+                else if(trial.length>1)
+                    line=trial[0];
                 if(breakflag)
                 break;
+
                 linecounter++;
                 openFile();
+                line=checkspace(line);
                 String[] data1 = line.split("[ ]+");
                 String []data2=data1[data1.length-1].split(",");
                 String [] data =concat(data1, data2);
@@ -385,6 +392,7 @@ if(symboltable.getRowInformmation().get(data[1])==null) {
          programCounter=Integer.parseInt(data[2],16);
          Start=programCounter;
          intiallocation=true;
+         projectName=data[0];
      }else {
          System.err.println("START is missed to begin running the code");
          System.err.println("the error line "+linecounter);
@@ -458,6 +466,8 @@ if(symboltable.getRowInformmation().get(data[1])==null) {
     {
         return formates;
     }
-
+    public String getProjectName() {
+        return projectName;
+    }
 }
 

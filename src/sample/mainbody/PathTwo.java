@@ -36,6 +36,7 @@ public class PathTwo implements Controlling {
         modify=new ArrayList<>();
         Adresses=new ArrayList<>();
         diplacement=one.getDispalcement();
+        fileName=one.getProjectName();
         start=one.getStart();
     }
 
