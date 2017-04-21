@@ -22,6 +22,7 @@ public class PathOne implements Controlling{
     private int noOferrors=0;
     private HashSet<String> litteral;
     private String projectName;
+    private String StartInst;
     public PathOne(String FileName) {
         file=FileName;
         formates=InstructionFormate.getInstructionTable();
@@ -375,6 +376,7 @@ if(symboltable.getRowInformmation().get(data[1])==null) {
     opperandLocation = 0;
     dispalcement = programCounter-Start;
     breakflag = true;
+    StartInst=data[opperandLocation+1];
 }
             symboltable.setRow("ErrOrS", programCounter);
             symboltable.setValue("ErrOrS", noOferrors);
@@ -468,6 +470,10 @@ if(symboltable.getRowInformmation().get(data[1])==null) {
     }
     public String getProjectName() {
         return projectName;
+    }
+
+    public String getStartInst() {
+        return StartInst;
     }
 }
 

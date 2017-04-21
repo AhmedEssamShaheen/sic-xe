@@ -22,6 +22,7 @@ public class PathTwo implements Controlling {
     private String fileName;
     private final int start;
     private ArrayList<String> lastlist;
+    private String Startinst;
     Formatter updatedFile;
     public PathTwo() {
         this.one = new PathOne("E:\\Ahmed\\GITHUB_RES\\Git2\\sic-xe\\src\\sample\\files/code.txt");
@@ -34,6 +35,7 @@ public class PathTwo implements Controlling {
         diplacement=one.getDispalcement();
         fileName=one.getProjectName();
         start=one.getStart();
+        Startinst=one.getStartInst();
     }
     public PathTwo (String FileName)
     {   this();
@@ -193,7 +195,8 @@ public class PathTwo implements Controlling {
             }
             String mod="M^"+loc+"^05";
             addUpdate(mod);
-
+            String End="E^"+Startinst+"^"+Integer.toHexString(SymbolicTable.getTable().getAddress(Startinst));
+            addUpdate(End);
 
         }
 
