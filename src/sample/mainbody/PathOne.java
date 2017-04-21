@@ -61,7 +61,7 @@ public class PathOne implements Controlling{
 
         try {
             while((line =reader.readLine())!=null){
-                String[]trial=line.split("//");
+                String[]trial=line.split("/");
                 if(line.charAt(0)=='/')
                     continue;
                 else if(trial.length>1)
