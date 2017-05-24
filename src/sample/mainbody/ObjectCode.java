@@ -48,9 +48,16 @@ public class ObjectCode {
                                       objectCode="0"+objectCode;
 
                             }
-                            if (mnemonic.equals("RESB") || mnemonic.equals("RESW"))
+                            if (mnemonic.equals("RESB") || mnemonic.equals("RESW")||mnemonic.equals("USE"))
                                       objectCode = "Sep";
-                            break;
+                            if (mnemonic.equals("EXTDEF"))
+                                      objectCode = "DEF";
+                             if (mnemonic.equals("EXTREF"))
+                                objectCode = "REF";
+                               if (mnemonic.equals("CSECT"))
+                                   objectCode = "sec";
+
+                break;
             case 1:
                 objectCode = InstructionFormate.getInstructionTable().getOppCode(mnemonic);
                 break;
@@ -91,7 +98,7 @@ public class ObjectCode {
 
                     if (handleP(Address)!=0)
                     {
-                        String displacement = immediate&&value? Integer.toHexString(Address) :Integer.toHexString(Address - pc);
+                        String displacement = immediate? Integer.toHexString(Address) :Integer.toHexString(Address - pc);
                         if(displacement.length()>3) {
                             displacement= displacement.substring(displacement.length()-3);
                         }
@@ -111,9 +118,20 @@ public class ObjectCode {
                                 + Integer.toHexString(xbpe) +
                                 (displacement.length()< 3 ? ZEROES3.substring(displacement.length())+ displacement
                                         : displacement) ;
+                    }else if(value){
+                        String displacement=Address+"";
+                        while(displacement.length()<3){
+                            displacement="0"+displacement;
+                        }
+                        objectCode =Integer.toHexString((Integer.parseInt(InstructionSet.getOppCode(mnemonic), 16)
+                                + handleNI(data[data.length-1])))
+                                + Integer.toHexString(xbpe)+displacement;
                     }
-                    else
-                        objectCode = "     **********ERROR! Displacement exceeds limit**********";
+
+                    else{
+                        objectCode = "**********ERROR! Displacement exceeds limit**********";
+                        System.err.println(objectCode);
+                    }
 
                 }
                 else objectCode = Integer.toHexString(Integer.parseInt(InstructionSet.getOppCode(mnemonic), 16)+3)

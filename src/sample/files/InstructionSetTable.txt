@@ -104,3 +104,9 @@ RESB           0      00    1   0
 +ADDF          4      58    1   0
 BASE           0      00    1   0
 LTORG          0      00    0   0
+EQU            0      00    0   0
+USE            0      00    0   0
+ORG            0      00    0   0
+CSECT          0      00    0   0
+EXTDEF         0      00    0   0
+EXTREF         0      00    0   0

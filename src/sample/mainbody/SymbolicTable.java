@@ -29,7 +29,6 @@ private HashMap<String ,SymbolData> rowInformmation;
         }
         return table;
     }
-
     private class SymbolData{
 private  int   value =0;
 private  int   address=0;
